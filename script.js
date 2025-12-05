@@ -1,6 +1,6 @@
 function createSpaceBackground() {
     const spaceBackground = document.getElementById('spaceBackground');
-    
+
     for (let i = 0; i < 200; i++) {
         const star = document.createElement('div');
         star.className = 'star';
@@ -60,24 +60,43 @@ async function loadPlatforms() {
 
 let searchResults = [];
 let showingAll = false;
+let currentMode = 'discover'; // 'discover' or 'availability'
 
 async function checkUsername(platform, username, platformName) {
     const url = platform.url.replace('{}', username);
-    
+
     const corsProxy = 'https://corsproxy.io/?';
     const proxiedUrl = corsProxy + encodeURIComponent(url);
-    
+
     try {
         const response = await fetch(proxiedUrl, {
             method: 'GET',
             redirect: 'follow'
         });
-        
-        if (response.ok && response.status !== 404) {
-            return { name: platformName, url: url, found: true };
+
+        // Check if username EXISTS on the platform
+        // response.ok && status !== 404 means the profile page loaded = username EXISTS
+        const usernameExists = response.ok && response.status !== 404;
+
+        if (currentMode === 'availability') {
+            // Availability mode: we want to find where username is NOT taken
+            if (usernameExists) {
+                // Username EXISTS = NOT available (taken)
+                return { name: platformName, url: url, status: 'taken' };
+            } else {
+                // Username NOT FOUND = AVAILABLE for registration
+                return { name: platformName, url: url, status: 'available' };
+            }
+        } else {
+            // Discover mode: we want to find where username EXISTS
+            if (usernameExists) {
+                return { name: platformName, url: url, status: 'found' };
+            } else {
+                return { name: platformName, url: url, status: 'not_found' };
+            }
         }
-        return null;
     } catch (error) {
+        // Error checking - can't determine, skip this platform
         return null;
     }
 }
@@ -87,43 +106,68 @@ function displayResults(results, showAll = false) {
     const exportSection = document.getElementById('exportSection');
     const statsBar = document.getElementById('statsBar');
     const showMoreSection = document.getElementById('showMoreSection');
-    
+
     const existingResults = resultsDiv.querySelectorAll('.result-item');
-    
+
+    // Update label based on mode
+    const foundLabel = document.getElementById('foundLabel');
+    if (foundLabel) {
+        foundLabel.textContent = currentMode === 'availability' ? 'Available' : 'Found';
+    }
+
     if (results.length === 0) {
-        resultsDiv.innerHTML = '<div class="no-results">No accounts found. The username may not exist on these platforms.</div>';
+        const noResultsMessage = currentMode === 'availability'
+            ? 'Username is taken on all checked platforms.'
+            : 'No accounts found. The username may not exist on these platforms.';
+        resultsDiv.innerHTML = `<div class="no-results">${noResultsMessage}</div>`;
         exportSection.classList.remove('show');
         statsBar.classList.remove('show');
         showMoreSection.classList.remove('show');
     } else {
         const displayCount = showAll ? results.length : Math.min(6, results.length);
-        
+
         if (showAll || existingResults.length !== displayCount) {
             resultsDiv.innerHTML = '';
-            
+
             for (let i = 0; i < displayCount; i++) {
                 const result = results[i];
                 const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
+
+                // Add availability-specific styling
+                if (currentMode === 'availability') {
+                    resultItem.className = 'result-item result-available';
+                } else {
+                    resultItem.className = 'result-item';
+                }
                 resultItem.style.animationDelay = (i * 0.05) + 's';
+
+                const statusBadge = currentMode === 'availability'
+                    ? '<span class="status-badge available">✓ Available</span>'
+                    : '<span class="status-badge found">Found</span>';
+
+                const buttonText = currentMode === 'availability' ? 'Register' : 'Visit';
+                const buttonClass = currentMode === 'availability' ? 'register-btn' : 'visit-btn';
+
                 resultItem.innerHTML = `
                     <span class="platform-name">${result.name}</span>
+                    ${statusBadge}
                     <span class="result-url">${result.url}</span>
                     <div class="result-actions">
-                        <a href="${result.url}" target="_blank" class="visit-btn">Visit</a>
+                        <a href="${result.url}" target="_blank" class="${buttonClass}">${buttonText}</a>
                     </div>
                 `;
                 resultsDiv.appendChild(resultItem);
             }
         }
-        
+
         if (results.length > 6 && !showAll) {
             showMoreSection.classList.add('show');
-            document.getElementById('showMoreBtn').textContent = `Show All ${results.length} Results`;
+            const label = currentMode === 'availability' ? 'Available' : 'Results';
+            document.getElementById('showMoreBtn').textContent = `Show All ${results.length} ${label}`;
         } else {
             showMoreSection.classList.remove('show');
         }
-        
+
         exportSection.classList.add('show');
         statsBar.classList.add('show');
     }
@@ -135,41 +179,58 @@ async function searchUsername(username) {
     const platforms = await loadPlatforms();
     const results = [];
     const platformEntries = Object.entries(platforms);
-    
+
     document.getElementById('totalCount').textContent = platformEntries.length;
     document.getElementById('platformCount').textContent = platformEntries.length;
     document.getElementById('scannedCount').textContent = '0';
     document.getElementById('foundCount').textContent = '0';
-    
+
+    // Update label based on mode
+    const foundLabel = document.getElementById('foundLabel');
+    if (foundLabel) {
+        foundLabel.textContent = currentMode === 'availability' ? 'Available' : 'Found';
+    }
+
     searchResults = [];
-    
+
     let scanned = 0;
-    
+
+    const checkingText = currentMode === 'availability' ? 'Checking availability:' : 'Checking:';
+
     for (let i = 0; i < platformEntries.length; i++) {
         const [name, platform] = platformEntries[i];
-        
-        document.getElementById('currentCheck').textContent = `Checking: ${name}`;
-        
+
+        document.getElementById('currentCheck').textContent = `${checkingText} ${name}`;
+
         const result = await checkUsername(platform, username, name);
-        
+
+        // Filter based on mode
         if (result) {
-            results.push(result);
-            searchResults.push(result);
-            document.getElementById('foundCount').textContent = results.length;
-            
-            displayResults(results, showingAll);
+            const shouldInclude = currentMode === 'availability'
+                ? result.status === 'available'
+                : result.status === 'found';
+
+            if (shouldInclude) {
+                results.push(result);
+                searchResults.push(result);
+                document.getElementById('foundCount').textContent = results.length;
+                displayResults(results, showingAll);
+            }
         }
-        
+
         scanned++;
         document.getElementById('scannedCount').textContent = scanned;
-        
+
         await new Promise(resolve => setTimeout(resolve, 50));
     }
 
-    document.getElementById('currentCheck').textContent = 'Scan complete!';
-    
+    const completeMessage = currentMode === 'availability'
+        ? `Scan complete! Found ${results.length} available platforms.`
+        : 'Scan complete!';
+    document.getElementById('currentCheck').textContent = completeMessage;
+
     displayResults(results, showingAll);
-    
+
     return results;
 }
 
@@ -217,7 +278,7 @@ function downloadFile(content, filename, contentType) {
 
 document.getElementById('searchBtn').addEventListener('click', async () => {
     const username = document.getElementById('usernameInput').value.trim();
-    
+
     if (!username) {
         alert('Please enter a username');
         return;
@@ -240,7 +301,7 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
     showingAll = false;
 
     const foundResults = await searchUsername(username);
-    
+
     loader.classList.remove('active');
     searchBtn.disabled = false;
     displayResults(foundResults, false);
@@ -248,7 +309,7 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
 
 document.getElementById('showMoreBtn').addEventListener('click', () => {
     showingAll = true;
-  
+
     if (searchResults.length > 0) {
         displayResults(searchResults, true);
     }
@@ -258,6 +319,47 @@ document.getElementById('usernameInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         document.getElementById('searchBtn').click();
     }
+});
+
+// Mode toggle functionality
+function updateModeUI(mode) {
+    currentMode = mode;
+    const discoverBtn = document.getElementById('modeDiscover');
+    const availabilityBtn = document.getElementById('modeAvailability');
+    const modeDescription = document.getElementById('modeDescription');
+    const searchBtn = document.getElementById('searchBtn');
+
+    if (mode === 'availability') {
+        discoverBtn.classList.remove('active');
+        availabilityBtn.classList.add('active');
+        modeDescription.textContent = 'Find platforms where this username is AVAILABLE for registration';
+        modeDescription.className = 'mode-description availability';
+        searchBtn.textContent = 'Check Availability';
+        searchBtn.className = 'search-btn availability-btn';
+    } else {
+        discoverBtn.classList.add('active');
+        availabilityBtn.classList.remove('active');
+        modeDescription.textContent = 'Find where this username already exists';
+        modeDescription.className = 'mode-description';
+        searchBtn.textContent = 'Search Accounts';
+        searchBtn.className = 'search-btn';
+    }
+
+    // Clear previous results
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('exportSection').classList.remove('show');
+    document.getElementById('statsBar').classList.remove('show');
+    document.getElementById('showMoreSection').classList.remove('show');
+    searchResults = [];
+}
+
+document.getElementById('modeDiscover').addEventListener('click', () => {
+    updateModeUI('discover');
+});
+
+document.getElementById('modeAvailability').addEventListener('click', () => {
+    updateModeUI('availability');
 });
 
 createSpaceBackground();

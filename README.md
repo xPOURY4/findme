@@ -1,14 +1,16 @@
-# FindME - A Powerful Tool for Social Media Account Discovery by Username
+# FindME Pro - Social Media Account Discovery & Availability Checker
 
 ![Penstaller](https://img.shields.io/badge/Social_Media_Account_Finding-OSINT_Toolkit-red)
 ![PyPI](https://img.shields.io/pypi/v/findme-osint?color=blue&label=PyPI) ![Downloads](https://img.shields.io/pypi/dm/findme-osint?color=green) ![License](https://img.shields.io/github/license/0xSaikat/findme) ![Python](https://img.shields.io/pypi/pyversions/findme-osint)
 
-FindME is a powerful and simple-to-use CLI-based tool that helps users search for social media and online platform profiles associated with a given username. Whether you're performing reconnaissance, verifying your digital footprint, or simply curious about username availability, FindME provides results quickly and efficiently.
+FindME Pro is a powerful and simple-to-use CLI-based tool that helps users search for social media and online platform profiles associated with a given username. **NEW in Pro:** Check username availability across platforms to find where you can register!
 
 ![logo](bg.jpeg)
 ![logo](findme.png)
 
 **🔍 Hunt down social media accounts by username across 400+ social networks**
+
+**✨ NEW: Check where a username is available for registration!**
 
 ## 🌐 Try It Online
 
@@ -38,15 +40,35 @@ pip install -r requirements.txt
 
 ## 🚀 Usage
 
-### If installed via PyPI:
-```bash
-findme
-```
+### Discovery Mode (Default)
+Find where a username already exists:
 
-### If running from source:
 ```bash
+# If installed via PyPI
+findme
+
+# If running from source
 python3 findme.py
 ```
+
+### ✨ Availability Mode (Pro Feature)
+Find where a username is **available for registration**:
+
+```bash
+# If installed via PyPI
+findme --mode availability
+
+# If running from source
+python3 findme.py --mode availability
+```
+
+### Command Line Options
+
+| Option | Description |
+|--------|-------------|
+| `--mode discover` | Find existing accounts (default) |
+| `--mode availability` | Find available usernames for registration |
+| `--help` | Show help message |
 
 Simply enter a username when prompted, and FindME will search across 400+ platforms!
 
@@ -68,10 +90,17 @@ FindME searches for usernames on **400+ platforms** including:
 
 ## 💡 How It Works
 
+### Discovery Mode
 1. **Input a username** when prompted
 2. **FindME searches** the username across 400+ predefined platforms concurrently
-3. **Displays results** with links to profiles where the username exists
+3. **Displays results** with links to profiles where the username **exists**
 4. **Real-time progress** with color-coded status indicators
+
+### Availability Mode (Pro)
+1. **Input a username** when prompted
+2. **FindME checks** each platform using the same detection logic
+3. **Displays platforms** where the username is **available for registration**
+4. **Direct links** to register your username on available platforms
 
 ---
 
@@ -90,11 +119,12 @@ FindME searches for usernames on **400+ platforms** including:
 - **🚀 Fast & Efficient:** Multi-threaded concurrent searching for quick results
 - **🎨 Beautiful CLI:** Color-coded output with real-time progress bars
 - **📊 Comprehensive:** Searches across 400+ social networks and platforms
+- **✨ Dual Mode:** Discover existing accounts OR find available usernames
 - **🔒 Privacy-Focused:** No data collection, all searches are performed securely
 - **🪶 Lightweight:** Minimal resource usage, works on any system
 - **🌍 Cross-Platform:** Compatible with Windows, macOS, and Linux
 - **📖 Open-Source:** Transparent code that you can review and contribute to
-- **🌐 Web Version:** Try it online at [findme.hackbit.org](https://findme.hackbit.org)
+- **🌐 Web Version:** Try it online at [findme.hackbit.org](https://findme.hackbit.org) with mode toggle
 
 ---
 
@@ -147,7 +177,15 @@ To add support for new platforms, edit `data.json` with the platform details:
 
 ## 📝 Changelog
 
-### v1.0.7 (Latest)
+### v2.0.0 - Pro Edition (Latest)
+- ✨ **NEW: Availability Mode** - Find where usernames are available for registration
+- ✨ **NEW: Mode Toggle** - Web version with easy mode switching
+- ✨ **NEW: CLI Arguments** - `--mode discover` or `--mode availability`
+- 🎨 Updated banner to PRO V-2.0
+- 🎨 Purple theme for availability mode in web version
+- 🔧 Improved detection accuracy
+
+### v1.0.7
 - ✅ Fixed data files packaging issue
 - ✅ Improved file path handling for installed package
 - ✅ Better error messages

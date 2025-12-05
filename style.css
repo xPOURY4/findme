@@ -487,6 +487,121 @@ footer {
     color: #0a0a0a;
 }
 
+/* Mode Toggle Styles */
+.mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.mode-btn {
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #fff;
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 212, 255, 0.2));
+    border-color: #00ff88;
+    color: #00ff88;
+}
+
+.mode-btn[data-mode="availability"].active {
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(0, 212, 255, 0.2));
+    border-color: #8a2be2;
+    color: #bb86fc;
+}
+
+.mode-description {
+    text-align: center;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.mode-description.availability {
+    color: #bb86fc;
+}
+
+/* Availability Mode Button */
+.search-btn.availability-btn {
+    background: linear-gradient(135deg, #8a2be2, #00d4ff);
+}
+
+/* Availability Result Styles */
+.result-item.result-available {
+    border-color: rgba(138, 43, 226, 0.3);
+    background: rgba(138, 43, 226, 0.05);
+}
+
+.result-item.result-available:hover {
+    border-color: #8a2be2;
+    background: rgba(138, 43, 226, 0.1);
+}
+
+.result-item.result-available .platform-name {
+    color: #bb86fc;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.status-badge.found {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.status-badge.available {
+    background: rgba(138, 43, 226, 0.2);
+    color: #bb86fc;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Register Button for Availability Mode */
+.register-btn {
+    padding: 8px 16px;
+    background: rgba(138, 43, 226, 0.2);
+    border: 1px solid #8a2be2;
+    border-radius: 8px;
+    color: #bb86fc;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.register-btn:hover {
+    background: #8a2be2;
+    color: #fff;
+}
+
 @media (max-width: 768px) {
     .logo {
         font-size: 2.5rem;
@@ -501,6 +616,18 @@ footer {
     }
 
     .result-url {
+        display: none;
+    }
+    
+    .mode-toggle {
+        flex-direction: column;
+    }
+    
+    .mode-btn {
+        width: 100%;
+    }
+    
+    .status-badge {
         display: none;
     }
 }
